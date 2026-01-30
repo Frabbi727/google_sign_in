@@ -7,7 +7,9 @@ class EmailPasswordAuthProvider implements BaseAuthProvider {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Callbacks
+  @override
   AuthSuccessCallback? onSuccess;
+  @override
   AuthErrorCallback? onError;
 
   @override
@@ -40,6 +42,7 @@ class EmailPasswordAuthProvider implements BaseAuthProvider {
       debugPrint('✅ [$providerName]: Account created successfully');
       debugPrint('   User: ${credential.user?.email}');
       debugPrint('   UID: ${credential.user?.uid}');
+      debugPrint('   NAME: ${credential.user?.displayName}');
 
       // Send verification email
       await sendEmailVerification();

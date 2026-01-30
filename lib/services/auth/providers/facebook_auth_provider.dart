@@ -25,7 +25,9 @@ class FacebookAuthProvider implements BaseAuthProvider {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Callbacks
+  @override
   AuthSuccessCallback? onSuccess;
+  @override
   AuthErrorCallback? onError;
 
   @override

@@ -14,7 +14,9 @@ class GoogleAuthProvider implements BaseAuthProvider {
   );
 
   // Callbacks
+  @override
   AuthSuccessCallback? onSuccess;
+  @override
   AuthErrorCallback? onError;
 
   @override
