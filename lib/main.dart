@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'services/auth/auth_service.dart';
 import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth/auth_selection_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routes: {
-        '/': (_) => const LoginScreen(),      // Start at login
+        '/': (_) => const AuthSelectionScreen(),  // Clean auth hub
         '/home': (_) => const HomeScreen(),
       },
     );
