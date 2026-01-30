@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "9866240104",
+    "project_id": "mail-auth-1673b",
+    "storage_bucket": "mail-auth-1673b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9866240104:android:a779c0d529f9bae164dbdd",
+        "android_client_info": {
+          "package_name": "com.example.demo_projects"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl33IkLnmPoxItncucGF3KXPVkDGuIj-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
