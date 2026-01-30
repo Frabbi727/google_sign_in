@@ -2,15 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'base_auth_provider.dart';
 
-/// Email/Password Authentication Provider
-///
-/// Handles traditional email and password authentication with email verification.
-///
-/// Features:
-/// - Sign up with email and password
-/// - Sign in with email and password
-/// - Email verification
-/// - Password reset
+
 class EmailPasswordAuthProvider implements BaseAuthProvider {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -160,38 +152,6 @@ class EmailPasswordAuthProvider implements BaseAuthProvider {
     return _auth.currentUser?.emailVerified ?? false;
   }
 
-  /// Reload the current user to get updated verification status
-  Future<void> reloadUser() async {
-    await _auth.currentUser?.reload();
-  }
-
-  /// Send password reset email
-  Future<void> sendPasswordResetEmail(String email) async {
-    debugPrint('🔑 [$providerName]: Sending password reset email to $email');
-
-    try {
-      await _auth.sendPasswordResetEmail(email: email);
-      debugPrint('✅ [$providerName]: Password reset email sent');
-    } on FirebaseAuthException catch (e) {
-      debugPrint('❌ [$providerName]: Failed to send password reset email');
-      debugPrint('   Code: ${e.code}');
-      debugPrint('   Message: ${e.message}');
-
-      String errorMessage;
-      switch (e.code) {
-        case 'invalid-email':
-          errorMessage = 'Invalid email address.';
-          break;
-        case 'user-not-found':
-          errorMessage = 'No account found with this email.';
-          break;
-        default:
-          errorMessage = e.message ?? 'Failed to send password reset email';
-      }
-
-      throw Exception(errorMessage);
-    }
-  }
 
   @override
   void dispose() {

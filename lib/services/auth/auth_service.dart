@@ -7,34 +7,7 @@ import 'providers/email_password_provider.dart';
 import 'providers/google_auth_provider.dart' as google_provider;
 import 'providers/facebook_auth_provider.dart' as facebook_provider;
 
-/// Unified Authentication Service (Singleton)
-///
-/// Manages all authentication providers in a modular, plug-and-play architecture.
-/// Each provider is independent and can be enabled/disabled without affecting others.
-///
-/// Supported Providers:
-/// - Magic Link (passwordless)
-/// - Email/Password (with verification)
-/// - Google Sign-In
-/// - Facebook Sign-In
-///
-/// Usage:
-/// ```dart
-/// final authService = AuthService();
-///
-/// // Magic Link
-/// await authService.magicLink.sendMagicLink('user@email.com');
-///
-/// // Email/Password
-/// await authService.emailPassword.signUp(email: 'user@email.com', password: 'pass');
-/// await authService.emailPassword.signIn(email: 'user@email.com', password: 'pass');
-///
-/// // Google
-/// await authService.google.signInWithGoogle();
-///
-/// // Facebook
-/// await authService.facebook.signInWithFacebook();
-/// ```
+
 class AuthService {
   // Singleton pattern
   static final AuthService _instance = AuthService._internal();
@@ -135,30 +108,7 @@ class AuthService {
     }
   }
 
-  /// Delete the current user account
-  Future<void> deleteAccount() async {
-    final user = currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
 
-    debugPrint('🗑️ AuthService: Deleting account for ${user.email}');
-
-    try {
-      await user.delete();
-      debugPrint('✅ AuthService: Account deleted successfully');
-    } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AuthService: Failed to delete account');
-      debugPrint('   Code: ${e.code}');
-      debugPrint('   Message: ${e.message}');
-
-      if (e.code == 'requires-recent-login') {
-        throw Exception('Please sign in again before deleting your account.');
-      }
-
-      throw Exception('Failed to delete account: ${e.message}');
-    }
-  }
 
   /// Reload the current user to get updated information
   Future<void> reloadUser() async {
@@ -173,9 +123,7 @@ class AuthService {
     }
   }
 
-  // ============================================================================
-  // CONVENIENCE METHODS (optional - for easier access)
-  // ============================================================================
+
 
   /// Quick access: Send magic link
   Future<void> sendMagicLink(String email) async {
@@ -185,41 +133,9 @@ class AuthService {
     await magicLink.sendMagicLink(email);
   }
 
-  /// Quick access: Sign up with email/password
-  Future<UserCredential> signUpWithEmailPassword({
-    required String email,
-    required String password,
-  }) async {
-    if (!emailPassword.isAvailable) {
-      throw Exception('Email/Password provider is not available');
-    }
-    return await emailPassword.signUp(email: email, password: password);
-  }
 
-  /// Quick access: Sign in with email/password
-  Future<UserCredential> signInWithEmailPassword({
-    required String email,
-    required String password,
-  }) async {
-    if (!emailPassword.isAvailable) {
-      throw Exception('Email/Password provider is not available');
-    }
-    return await emailPassword.signIn(email: email, password: password);
-  }
 
-  /// Quick access: Sign in with Google
-  Future<UserCredential> signInWithGoogle() async {
-    if (!google.isAvailable) {
-      throw Exception('Google Sign-In is not configured. Add google_sign_in package.');
-    }
-    return await google.signInWithGoogle();
-  }
 
-  /// Quick access: Sign in with Facebook
-  Future<UserCredential> signInWithFacebook() async {
-    if (!facebook.isAvailable) {
-      throw Exception('Facebook Sign-In is not configured. Add flutter_facebook_auth package.');
-    }
-    return await facebook.signInWithFacebook();
-  }
+
+
 }

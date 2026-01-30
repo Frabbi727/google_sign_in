@@ -22,7 +22,9 @@ class MagicLinkAuthProvider implements BaseAuthProvider {
   static const _emailKey = 'magic_email';
 
   // Callbacks
+  @override
   AuthSuccessCallback? onSuccess;
+  @override
   AuthErrorCallback? onError;
 
   @override

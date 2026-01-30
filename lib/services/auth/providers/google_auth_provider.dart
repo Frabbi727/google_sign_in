@@ -6,20 +6,7 @@ import 'base_auth_provider.dart';
 // Import Firebase's GoogleAuthProvider for credential creation
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
-/// Google Authentication Provider
-///
-/// Handles authentication via Google Sign-In.
-///
-/// Setup required:
-/// 1. Add package: flutter pub add google_sign_in
-/// 2. Enable Google Sign-In in Firebase Console
-/// 3. Configure Android: SHA-1 fingerprint in Firebase
-/// 4. Configure iOS: Add URL schemes in Info.plist
-///
-/// Features:
-/// - One-tap Google sign-in
-/// - Automatic account picker
-/// - Seamless sign-in/sign-up
+
 class GoogleAuthProvider implements BaseAuthProvider {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -34,7 +21,7 @@ class GoogleAuthProvider implements BaseAuthProvider {
   String get providerName => 'Google';
 
   @override
-  bool get isAvailable => true; // Package is now installed!
+  bool get isAvailable => true;
 
   @override
   Future<void> initialize() async {
