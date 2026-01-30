@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:app_links/app_links.dart';
 
 import 'magic_link_auth.dart';
 
@@ -12,14 +14,50 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _magic = MagicLinkAuth();
+  final _appLinks = AppLinks();
   bool _loading = false;
+  StreamSubscription<Uri>? _linkSub;
 
   // TODO: replace with your real domain
   final String linkDomain = 'auth.yourdomain.com';
 
   @override
+  void initState() {
+    super.initState();
+    _setupDeepLinkListener();
+  }
+
+  void _setupDeepLinkListener() {
+    // Listen for deep links while on login screen
+    _linkSub = _appLinks.uriLinkStream.listen((uri) async {
+      await _handleMagicLink(uri);
+    });
+  }
+
+  Future<void> _handleMagicLink(Uri uri) async {
+    try {
+      print('🔗 LoginScreen received deep link: ${uri.toString()}');
+      final cred = await _magic.trySignInWithLink(uri.toString());
+      if (cred != null && mounted) {
+        print('✅ Sign-in successful from LoginScreen, navigating to home');
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        print('⚠️ Magic link returned null credential in LoginScreen');
+      }
+    } catch (e) {
+      print('❌ Magic link error in LoginScreen: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign-in failed: $e')),
+        );
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _emailCtrl.dispose();
+    _linkSub?.cancel();
     super.dispose();
   }
 

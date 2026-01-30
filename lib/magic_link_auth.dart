@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MagicLinkAuth {
@@ -38,16 +39,33 @@ class MagicLinkAuth {
 
 
   Future<UserCredential?> trySignInWithLink(String emailLink) async {
-    if (!_auth.isSignInWithEmailLink(emailLink)) return null;
+    print('🔍 Checking if link is valid: $emailLink');
+
+    if (!_auth.isSignInWithEmailLink(emailLink)) {
+      if (kDebugMode) {
+        print('❌ Firebase says this is NOT a valid sign-in link');
+      }
+      return null;
+    }
+
+    print('✅ Firebase confirmed this is a valid sign-in link');
 
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString(_emailKey);
 
+    debugPrint('📧 Saved email from SharedPreferences: $email');
+
     if (email == null) {
+      debugPrint('❌ No email found in SharedPreferences');
+
       throw Exception('No saved email found. Ask user to enter email again.');
     }
 
+    debugPrint('🔐 Attempting to sign in with email: $email');
     final cred = await _auth.signInWithEmailLink(email: email, emailLink: emailLink);
+    debugPrint('✅ Sign in successful! User: ${cred.user?.email}');
+    debugPrint('✅ NAME: ${cred.user?.displayName}');
+
     await prefs.remove(_emailKey);
     return cred;
   }

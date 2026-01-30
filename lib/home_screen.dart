@@ -36,6 +36,11 @@ class HomeScreen extends StatelessWidget {
               user?.email ?? 'No email',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 12),
+            Text(
+              user?.uid ?? 'id',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),

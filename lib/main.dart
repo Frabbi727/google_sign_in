@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'auth_gate.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Demo Projects',
       routes: {
-        '/': (_) => const LoginScreen(),
+        '/': (_) => const AuthGate(),
+        '/login': (_) => const LoginScreen(),
         '/home': (_) => const HomeScreen(),
       },
     );
