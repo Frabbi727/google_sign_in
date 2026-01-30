@@ -1,0 +1,38 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "mail-auth-1673b",
+          "appId": "1:9866240104:android:a779c0d529f9bae164dbdd",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "mail-auth-1673b",
+          "appId": "1:9866240104:ios:dfcfd378644836c964dbdd",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "mail-auth-1673b",
+          "configurations": {
+            "android": "1:9866240104:android:a779c0d529f9bae164dbdd",
+            "ios": "1:9866240104:ios:dfcfd378644836c964dbdd"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "mail_auth",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
