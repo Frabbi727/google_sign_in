@@ -3,56 +3,62 @@ import 'package:app_links/app_links.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'base_auth_provider.dart';
 
-/// Singleton service that manages all authentication operations
-/// including magic link sending, deep link handling, and user sessions
-class AuthService {
-  // Singleton pattern
-  static final AuthService _instance = AuthService._internal();
-  factory AuthService() => _instance;
-  AuthService._internal();
-
-  // Dependencies
+/// Magic Link Authentication Provider
+///
+/// Handles passwordless authentication via email links.
+/// Users receive an email with a magic link, clicking it signs them in.
+///
+/// Features:
+/// - Passwordless authentication
+/// - Deep link handling
+/// - Email persistence via SharedPreferences
+class MagicLinkAuthProvider implements BaseAuthProvider {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final AppLinks _appLinks = AppLinks();
-
-  // State
   StreamSubscription<Uri>? _linkSubscription;
+
   static const _emailKey = 'magic_email';
 
-  // Callback for when user successfully signs in
-  Function(UserCredential)? onSignInSuccess;
-  Function(String)? onSignInError;
+  // Callbacks
+  AuthSuccessCallback? onSuccess;
+  AuthErrorCallback? onError;
 
-  /// Initialize the service - sets up deep link listener
-  /// Call this once when the app starts
+  @override
+  String get providerName => 'Magic Link';
+
+  @override
+  bool get isAvailable => true; // Always available
+
+  @override
   Future<void> initialize() async {
-    debugPrint('🔧 AuthService: Initializing...');
+    debugPrint('🔧 [$providerName]: Initializing...');
 
     // Check if app was opened with a magic link
     final initialLink = await _appLinks.getInitialLink();
     if (initialLink != null) {
-      debugPrint('🔗 AuthService: Found initial link');
-      await _processDeepLink(initialLink);
+      debugPrint('🔗 [$providerName]: Found initial link');
+      await _handleDeepLink(initialLink);
     }
 
     // Listen for future deep links
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (uri) async {
-        debugPrint('🔗 AuthService: Received deep link');
-        await _processDeepLink(uri);
+        debugPrint('🔗 [$providerName]: Received deep link');
+        await _handleDeepLink(uri);
       },
       onError: (error) {
-        debugPrint('❌ AuthService: Deep link error: $error');
+        debugPrint('❌ [$providerName]: Deep link error: $error');
       },
     );
 
-    debugPrint('✅ AuthService: Initialized');
+    debugPrint('✅ [$providerName]: Initialized');
   }
 
   /// Send a magic link to the provided email
   Future<void> sendMagicLink(String email) async {
-    debugPrint('📧 AuthService: Sending magic link to $email');
+    debugPrint('📧 [$providerName]: Sending magic link to $email');
 
     // Configure the magic link settings
     final actionCodeSettings = ActionCodeSettings(
@@ -67,7 +73,7 @@ class AuthService {
     // Save email to SharedPreferences (needed later for sign-in)
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_emailKey, email);
-    debugPrint('💾 AuthService: Email saved to SharedPreferences');
+    debugPrint('💾 [$providerName]: Email saved to SharedPreferences');
 
     try {
       // Send the email via Firebase
@@ -75,91 +81,75 @@ class AuthService {
         email: email,
         actionCodeSettings: actionCodeSettings,
       );
-      debugPrint('✅ AuthService: Magic link sent successfully');
+      debugPrint('✅ [$providerName]: Magic link sent successfully');
     } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AuthService: FirebaseAuthException');
+      debugPrint('❌ [$providerName]: FirebaseAuthException');
       debugPrint('   Code: ${e.code}');
       debugPrint('   Message: ${e.message}');
       rethrow;
     } catch (e) {
-      debugPrint('❌ AuthService: Unknown error: $e');
+      debugPrint('❌ [$providerName]: Unknown error: $e');
       rethrow;
     }
   }
 
   /// Process an incoming deep link (private method)
-  Future<void> _processDeepLink(Uri uri) async {
+  Future<void> _handleDeepLink(Uri uri) async {
     try {
-      debugPrint('🔍 AuthService: Processing link: ${uri.toString()}');
+      debugPrint('🔍 [$providerName]: Processing link: ${uri.toString()}');
 
       // Validate the link with Firebase
       if (!_auth.isSignInWithEmailLink(uri.toString())) {
-        debugPrint('⚠️ AuthService: Not a valid sign-in link');
+        debugPrint('⚠️ [$providerName]: Not a valid sign-in link');
         return;
       }
 
-      debugPrint('✅ AuthService: Link is valid');
+      debugPrint('✅ [$providerName]: Link is valid');
 
       // Retrieve the saved email
       final prefs = await SharedPreferences.getInstance();
       final email = prefs.getString(_emailKey);
 
       if (email == null) {
-        debugPrint('❌ AuthService: No saved email found');
-        onSignInError?.call('No saved email found. Please try again.');
+        debugPrint('❌ [$providerName]: No saved email found');
+        onError?.call('No saved email found. Please try again.');
         return;
       }
 
-      debugPrint('📧 AuthService: Found saved email: $email');
+      debugPrint('📧 [$providerName]: Found saved email: $email');
 
       // Sign in with Firebase
-      debugPrint('🔐 AuthService: Attempting sign-in...');
+      debugPrint('🔐 [$providerName]: Attempting sign-in...');
       final credential = await _auth.signInWithEmailLink(
         email: email,
         emailLink: uri.toString(),
       );
 
-      debugPrint('✅ AuthService: Sign-in successful!');
+      debugPrint('✅ [$providerName]: Sign-in successful!');
       debugPrint('   User: ${credential.user?.email}');
       debugPrint('   UID: ${credential.user?.uid}');
 
       // Clean up - remove saved email
       await prefs.remove(_emailKey);
-      debugPrint('🧹 AuthService: Cleaned up saved email');
+      debugPrint('🧹 [$providerName]: Cleaned up saved email');
 
       // Notify success
-      onSignInSuccess?.call(credential);
+      onSuccess?.call(credential);
 
     } on FirebaseAuthException catch (e) {
-      debugPrint('❌ AuthService: FirebaseAuthException');
+      debugPrint('❌ [$providerName]: FirebaseAuthException');
       debugPrint('   Code: ${e.code}');
       debugPrint('   Message: ${e.message}');
-      onSignInError?.call(e.message ?? 'Authentication failed');
+      onError?.call(e.message ?? 'Authentication failed');
     } catch (e) {
-      debugPrint('❌ AuthService: Error processing deep link: $e');
-      onSignInError?.call('Failed to sign in: $e');
+      debugPrint('❌ [$providerName]: Error processing deep link: $e');
+      onError?.call('Failed to sign in: $e');
     }
   }
 
-  /// Get the current user
-  User? get currentUser => _auth.currentUser;
-
-  /// Check if user is signed in
-  bool get isSignedIn => _auth.currentUser != null;
-
-  /// Stream of auth state changes
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
-
-  /// Sign out the current user
-  Future<void> signOut() async {
-    debugPrint('👋 AuthService: Signing out');
-    await _auth.signOut();
-    debugPrint('✅ AuthService: Signed out');
-  }
-
-  /// Clean up resources
+  @override
   void dispose() {
-    debugPrint('🧹 AuthService: Disposing...');
+    debugPrint('🧹 [$providerName]: Disposing...');
     _linkSubscription?.cancel();
   }
 }
